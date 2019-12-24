@@ -15,7 +15,7 @@ import tensorflow as tf
 """Practice 1 - Regression and Estimator (Exercise part)
 # Task: Aproximate the median house value of each block
 
-# SubTasks
+# How-to
     1. Data loading and Insights
     2. Preprocessing -  Splitting and Normalization
     3. Building Feature columns
