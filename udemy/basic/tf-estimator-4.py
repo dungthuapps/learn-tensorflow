@@ -26,7 +26,8 @@ import tensorflow as tf
     4. Building Input functions
     5. Building Model
     6. Train, Evaluate and Predict
-    7. Calculate the RMSE of models
+    7. Reporting classification errors
+    8. Saving and Restore Models
 
 """
 
@@ -130,6 +131,7 @@ dnn_model.train(train_input_func, steps=20000)
 dnn_eval_results = dnn_model.evaluate(eval_input_func)
 dnn_predictions = list(dnn_model.predict(pred_input_func))
 
+# 7 Reporting
 final_lin_preds = [pred["class_ids"].item() for pred in lin_predictions]
 final_dnn_preds = [pred["class_ids"].item() for pred in dnn_predictions]
 
@@ -138,3 +140,6 @@ dnn_pred_report = classification_report(y_test, final_dnn_preds)
 
 print(lin_pred_report)
 print(dnn_pred_report)
+
+# 8 Saving models
+

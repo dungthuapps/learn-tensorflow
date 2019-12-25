@@ -184,7 +184,10 @@ with tf.Session() as sess:
     layer_out = sess.run(a, feed_dict={x: np.random.random([1, n_features])})
     print(layer_out)
 
-"""Concept 6: Simple Regression Example"""
+"""Concept 6: Simple Regression Example
+
+also: Saving and loading model
+"""
 # data ~ data + noise
 x_data = np.linspace(0, 10, 10) + np.random.uniform(-1.5, 1.5, 10)
 y_label = np.linspace(0, 10, 10) + np.random.uniform(-1.5, 1.5, 10)
@@ -223,12 +226,28 @@ with tf.Session() as sess:
     # Extract out the value of m, b after training
     m_hat, b_hat = sess.run([m, b])
 
+    # ! saving check points
+    # Saving a Model
+    #   8-a if saving a session -> called a checkpoint
+
+    # saver = tf.train.Saver()
+    # saver.save(sess, 'models/my_first_model.ckpt')
+
+# ! Restore | Load a model
+#   (should start after with tf.Session() as sess:)
+with tf.Session() as sess:
+    saver = tf.train.Saver()
+    saver.restore(sess, "models/my_first_model.ckpt")
+
+    m_hat, b_hat = sess.run([m, b])
+
 # Now we test data
 x_test = np.linspace(-1, 11, 10)
 y_pred_plot = m_hat * x_test + b_hat
 plt.plot(x_test, y_pred_plot, 'r')  # plot a trend line
 plt.plot(x_data, y_label, 'b.')
 plt.show()
+
 
 """Concept 7: Batching"""
 x_data = np.linspace(0., 10., 1000000)
