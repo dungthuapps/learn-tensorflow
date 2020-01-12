@@ -1,10 +1,12 @@
-"""Concept 2 - CNN for MNIST.
+"""Concept 3 - CNN for CIFAR-10
+(Exercise of Section 8).
 
-### CNN
-    - Initialization (Weights and Bias)
+CIFAR can be loaded using:
+    https://keras.io/examples/cifar10_cnn/ (small)
+    https://www.tensorflow.org/datasets/overview
 
 
-### Procedures
+# Procedures
     1. Load data with one-hot encoding
     2. First Insight of data
     3. Build Models
@@ -38,7 +40,7 @@
         2. Init global variables (graphs)
         3. Create a session
         4. Inside the session, create a feed_dict to place holders
-            2. for each epoch in the session, 
+            2. for each epoch in the session,
                 1. feed_dict = random_batch_of (x, y_true, and prob_of_drop_out )
                 2. train = run/re-run session with feed_dict
                 4. validation for each run
@@ -51,7 +53,10 @@
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
+import numpy as np
+
+from keras.datasets import cifar10
+from sklearn.preprocessing import OneHotEncoder
 
 
 def init_weights(shape):
@@ -103,64 +108,99 @@ def normal_full_layer(input_layer, size):
     return y
 
 
-# 1 - Data and Insights
-mnist = input_data.read_data_sets("data/mnist/", one_hot=True)
-mnist.train.num_examples
-mnist.test.num_examples
+# 1 - Load Data
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
-# 2 - Build model
-x = tf.placeholder(tf.float32, shape=[None, 784])
-y_true = tf.placeholder(tf.float32, shape=[None, 10])
+encoder = OneHotEncoder()
 
-#   Layer
-x_image = tf.reshape(x, [-1, 28, 28, 1])
-# 5x5 padding ~ (5, 5, 1) ~ 1 is channels (or color depth)
-# 32 filters
+encoder.fit(y_train)
+y_train = encoder.transform(y_train).toarray()
+y_test = encoder.transform(y_test).toarray()
+print('x_train shape:', x_train.shape)
+print(x_train.shape[0], 'train samples')
+print(x_test.shape[0], 'test samples')
 
-conv2d_1 = convolutional_layer(x_image, shape=[5, 5, 1, 32])
+# 2 - First Insights
+rand_img = x_train[99]
+plt.imshow(rand_img)
+plt.show()
+
+# 3 - Build Model
+
+# 3.1 - Place Holders
+
+# get the shape (n, h, w, c), ignore n and convert to [None, 32, 32, 3]
+x_shape = [None] + list(x_train.shape[1:])
+y_shape = [None] + list(y_train.shape[1:])
+
+x = tf.placeholder(tf.float32, shape=x_shape)
+y_true = tf.placeholder(tf.float32, shape=y_shape)
+# 3.2 - Resize a Tensor ()
+#   skip, no reshape here
+
+# 3.3 - CNN Blocks
+_channel = x_shape[-1]
+_n_filters = 32
+conv2d_1 = convolutional_layer(x, shape=[5, 5, _channel, _n_filters])
 pooling_1 = max_pool_2by2(conv2d_1)
 
-# depth of input and filter mus be the same
-conv2d_2 = convolutional_layer(pooling_1, shape=[5, 5, 32, 64])
+_channel = _n_filters
+_n_filters = 64
+conv2d_2 = convolutional_layer(pooling_1, shape=[5, 5, _channel, _n_filters])
 pooling_2 = max_pool_2by2(conv2d_2)
 
-conv2d_flat = tf.reshape(pooling_2, [-1, 7*7*64])
+# 3.4 - DNN Block (Final)
+
+_shape = np.prod(pooling_2.get_shape()[1:])
+conv2d_flat = tf.reshape(pooling_2, [-1, _shape])
 full_layer_1 = tf.nn.relu(normal_full_layer(conv2d_flat, 1024))
 
-#   Regularization by drop out
-hold_prob = tf.placeholder(tf.float32)
-dropout_1 = tf.nn.dropout(full_layer_1, rate=hold_prob)
+hold_prob = tf.placeholder(tf.float32)  # apply drop_out
+dropout_1 = tf.nn.dropout(full_layer_1, keep_prob=hold_prob)
 
-#   Ouput is one-hot-encoding vector
-y_pred = normal_full_layer(dropout_1, 10)
+# 3.5 - Output
+_len_one_hot_encorder = y_shape[-1]
+y_pred = normal_full_layer(dropout_1, _len_one_hot_encorder)
 
-#   Cost function and Loss
+# 3.6 - Cost and Lost Function
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y_true,
                                                         logits=y_pred)
 L = tf.reduce_mean(cross_entropy)
 
-#   Optimizer (back propogation)
+# 3.7 - Optimization and Backward updating (Gradient Descent)
 optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
 train = optimizer.minimize(L)
 
-init = tf.global_variables_initializer()
-steps = 5000
+# 4 - Train and Validation
+epochs = 1
 batch_size = 50
+n_samples = x_train.shape[0]
 
+
+# 4.1 - Init global variables (TF Graphs)
+init = tf.global_variables_initializer()
+
+eval_feed_dict = {x: x_test[:batch_size], y_true: y_test[:batch_size], hold_prob: 1.}
+
+# 4.2 - Train
+step = 0
 with tf.Session() as sess:
     sess.run(init)
-    eval_feed_dict = {x: mnist.test.images,
-                      y_true: mnist.test.labels,
-                      hold_prob: 1.}
+    _t = None
+    for i in range(epochs):
+        for s in range(0, n_samples, batch_size):
+            step += 1
+            batch_x = x_train[s: s + batch_size]
+            batch_y = y_train[s: s + batch_size]
+            train_feed_dict = {x: batch_x, y_true: batch_y, hold_prob: 0.5}
+            sess.run(train, feed_dict=train_feed_dict)
+           
 
-    for i in range(steps):
-        batch_x, batch_y = mnist.train.next_batch(batch_size)
-        train_feed_dict = {x: batch_x, y_true: batch_y, hold_prob: 0.5}
-        sess.run(train, feed_dict=train_feed_dict)
+            # 4.3 - Validation in the same session
+            matches = tf.equal(tf.argmax(y_pred, 1), tf.argmax(y_true, 1))
+            acc = tf.reduce_mean(tf.cast(matches, tf.float32))
 
-        matches = tf.equal(tf.argmax(y_pred, 1), tf.argmax(y_true, 1))
-        acc = tf.reduce_mean(tf.cast(matches, tf.float32))
+            acc_result = sess.run(acc, feed_dict=eval_feed_dict)
+            print(f"STEP {step}: acc {acc_result} \n")
 
-        acc_result = sess.run(acc, feed_dict=eval_feed_dict)
-        if (i % 100) == 0:
-            print(f"STEP {i}: acc {acc_result} \n")
+

@@ -1,19 +1,43 @@
-"""Concept 1: MNIST and Simple Linear
+"""Concept 1: MNIST and Simple Linear (DNN)
 
-Simple Linear
+### Simple Linear
+
     1 Layer -> Loss -> Optimizer
 
-MNIST
-    - pixel arrays in gray-scale (0~1).
-    - 28 * 28
-        -> can flatten to 1-D ~ (784,1) or (1, 784)
-        -> or 2-D (28, 28, 1)
-    - 55000 images as a tensor (n-d array)
+### MNIST
 
-Labels Encoding
-    - One-Hot Encoding
-        - vector = n-classes, e.g 10
-    - means, 5500 labels ---converted ---> (10, 55000) 2-d array
+- pixel arrays in gray-scale (0~1).
+- 28 * 28
+    -> can flatten to 1-D ~ (784,1) or (1, 784)
+    -> or 2-D (28, 28, 1)
+- 55000 images as a tensor (n-d array)
+
+### Labels Encoding
+
+- One-Hot Encoding
+    - vector = n-classes, e.g 10
+- means, 5500 labels ---converted ---> (10, 55000) 2-d array
+
+### Procedures
+
+    1. Load data with one-hot encoding
+    2. First Insight of data
+    3. Build Models
+        1. PlaceHolders of Input X and output y_true
+        2. Variable of Weights and Input
+        3. Cost Function and Lost Function
+        4. Optimization (Gradient Descent)
+    4. Run model
+        1. Specify epochs and batch size
+        2. Init global variables (graphs)
+        3. Create a session
+        4. Inside session, create a feed_dict to place holders
+            1. train = run session with feed_dict
+        5. In another session, validation by
+            1. pass another feed_dict = (test_input, test_output)
+            2. validation = correction predictions of (y, and y_true)
+            4. fit ~ run session
+
 """
 
 import matplotlib.pyplot as plt
