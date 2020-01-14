@@ -38,11 +38,14 @@ W1 = tf.Variable(tf.random_normal(shape=[num_inputs, num_neurons]))
 W2 = tf.Variable(tf.random_normal(shape=[num_neurons, num_neurons]))
 b = tf.Variable(tf.zeros(shape=(1, num_neurons)))
 
-# Graphs
+# Graphs - (unrolled)
 #   x0 -> W1 -> y0
 #   (x1 -> W1) and (y0 -> W2) -> y1
 # ? Why x1 -> w1
-#   Actually, only y back to neuron, x1 reuse the old neurons (unrolled)
+#   unrolled
+#       - y0 as ouput of t-1 -> multiply with W2 to be fed back to old neuron
+#       - y0 * w2 + x1 * w1 -> y1
+
 y0 = tf.tanh(tf.matmul(x0, W1) + b)
 y1 = tf.tanh(tf.matmul(y0, W2) + tf.matmul(x1, W1) + b)
 

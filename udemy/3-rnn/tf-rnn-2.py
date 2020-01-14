@@ -166,8 +166,12 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-# Now Task 2: from model generate a long time series
 
+"""Task 2: Generate TS from a model
+
+from a trained model generate a long time series.
+
+"""
 with tf.Session() as sess:
     saver.restore(sess, "model/rnn_ts_model_1")
 
