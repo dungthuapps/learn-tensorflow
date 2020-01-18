@@ -81,9 +81,11 @@
     ![receptive field neural network](images/receptive_field_nn.png)
 
     ![receptive field filters](images/receptive_field_filter.png)
+
   - invariance **???**
     - reduce size
     - ...
+
 - Tensor
 
   - scalar ~ 3

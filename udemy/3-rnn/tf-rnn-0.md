@@ -54,6 +54,7 @@
       - y4 is an vector
 
   - Vector to Sequence
+
     - single time step -> get sequence of next
       . current move -> next (5 moves)
 
